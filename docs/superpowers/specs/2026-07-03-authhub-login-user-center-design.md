@@ -43,6 +43,12 @@ https://auth.yoloxy.com
 - `VITE_AUTHHUB_API_URL`
 - `VITE_AUTHHUB_APP_KEY`
 
+发票助手使用的 AuthHub app key：
+
+```text
+2105e709-867f-4a7a-864c-76b6dcb09fa3
+```
+
 所有 AuthHub 业务请求带：
 
 ```http
