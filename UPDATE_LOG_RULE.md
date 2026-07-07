@@ -18,6 +18,28 @@
 4. 打版本 tag：
    - 父仓打 `v*` tag 并 push（触发 GitHub Actions 自动部署 Web）。
 
+## 2.1 手动发布命令顺序
+
+当用户只说“修改版本 打tag 提交”且未指定版本号时，默认在当前最新 `v*` 版本上递增 patch 版本。
+
+发布时按以下顺序操作，避免父仓 Action 拉不到子模块提交：
+
+1. 子仓 `invoice-server/`：
+   - 暂存本次业务改动与 `package.json` 版本号。
+   - 提交，例如：`git -C invoice-server commit -m "feat: ..."`。
+   - 打同名版本 tag，例如：`git -C invoice-server tag -a v0.6.18 -m "v0.6.18"`。
+2. 父仓 `invoice-pdf-printer/`：
+   - 暂存 `UPDATE_LOG.md` 和 `invoice-server` 子模块指针。
+   - 提交，例如：`git commit -m "chore: release v0.6.18"`。
+   - 打同名版本 tag，例如：`git tag -a v0.6.18 -m "v0.6.18"`。
+3. 如需触发部署 Action：
+   - 先推子仓分支：`git -C invoice-server push origin <branch>`。
+   - 再推子仓同名 tag：`git -C invoice-server push origin v0.6.18`。
+   - 再推父仓主分支：`git push origin main`。
+   - 最后推父仓同名 tag：`git push origin v0.6.18`。
+
+注意：`.github/workflows/main.yml` 由父仓 `v*` tag push 或手动 `workflow_dispatch` 触发；单纯 merge/push 到 `main` 不会触发部署。父仓 tag 指向的提交必须包含正确的 `invoice-server` 子模块指针，且该子模块提交必须已推到子仓远端。
+
 ## 3. 日志内容建议
 
 - 只记录用户可感知或部署相关的变更（构建/发布流程修复也应写入）。
@@ -26,4 +48,3 @@
 ## 4. 禁止项
 
 - 不要手动改写 `UPDATE_LOG.md` 里已存在的旧版本历史正文（除非你明确要追溯式修订，且会带来不可逆的历史变化）。
-
